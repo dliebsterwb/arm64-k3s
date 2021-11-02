@@ -9,15 +9,15 @@ Blame dliebster 2021/10/19
 
 Scripting of bare OS -> k8s up-and-running on Rasperry Pis.
 
-Ansible inventory for LAX Pis is in the hosts.pi file.
+Ansible inventory for a smaple set of 7 Pi 4b's grouped as laxpi in the hosts.pi file.
+
 
 Once inventory is established:
-
 
 ansible-playbook playbooks/<insert playbook name here>
 
 
-Avaialbe modules are: 
+Available modules are: 
 * aptupgrade-autoReboot.yaml
 * config-os.yaml
 * log2ram.yaml
