@@ -1,8 +1,8 @@
 # Raspberry Pi k8s Soup-2-Nuts installation 
 
-# Ansible = 2.10.13
+Ansible = 2.10.13
 
-# Blame dliebster 2021/10/19
+Blame dliebster 2021/10/19
 
 
 !Work in Progress!
