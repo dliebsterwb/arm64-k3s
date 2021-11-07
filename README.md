@@ -26,3 +26,6 @@ Available modules are:
 These will be united under a 'site.ymal' once the dst settles..
 
 Please use caution, some items such as disk provision may be destructive to existing installations
+  
+  
+Keeping k3s-ansible around for ideas, it is still 10x slower than k3sup atm tho..
