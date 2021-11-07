@@ -1,0 +1,8 @@
+[laxpi]
+lax-pi-01.vigilance.solutions ansible_user=ubuntu
+lax-pi-02.vigilance.solutions ansible_user=ubuntu
+lax-pi-03.vigilance.solutions ansible_user=ubuntu
+lax-pi-04.vigilance.solutions ansible_user=ubuntu
+lax-pi-05.vigilance.solutions ansible_user=ubuntu
+lax-pi-06.vigilance.solutions ansible_user=ubuntu
+lax-pi-07.vigilance.solutions ansible_user=ubuntu

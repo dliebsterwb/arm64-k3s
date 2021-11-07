@@ -1,0 +1,63 @@
+- hosts: all
+  become: true
+  become_user: root
+
+  tasks:
+    - name: Make sure sda references are removed
+      ansible.builtin.lineinfile:
+        path: /etc/fstab
+        state: absent
+        regexp: 'sda'
+
+    - name: create k8s LVM partition
+      parted:
+        device: /dev/sda
+        number: 1
+        flags: [lvm]
+        state: present
+        part_end: 100%
+
+    - name: Create k8s Volume Group
+      lvg:
+        pvs: /dev/sda1
+        vg: k8s_vg
+        state: present
+
+    - name: task for creating k8s system logical volume
+      lvol:
+        vg: k8s_vg
+        lv: k8s-sys_lv
+        size: 50g
+        force: true
+
+    - name: task for creating k8s CSI logical volume
+      lvol:
+        vg: k8s_vg
+        lv: k8s-csi_lv
+        size: 180g
+        force: true
+
+    - name: Create a k8s_sys ext4 filesystem
+      filesystem:
+        fstype: ext4
+        force: true
+        resizefs: true
+        dev: /dev/k8s_vg/k8s-sys_lv
+        # opts: -cc # takes loooong time for 256GB Flash...
+
+## The Minio CSI will manage the csi raw partition
+#    - name: Create a k8s_csi ext4 filesystem
+#      filesystem:
+#        fstype: ext4
+#        force: yes
+#        resizefs: yes
+#        dev: /dev/k8s_vg/k8s-csi_lv
+#        # opts: -cc # takes loooong time for 256GB Flash...
+
+    - name: Create k3s system mountpoint
+      mount:
+        path: /var/lib/rancher
+        src: /dev/k8s_vg/k8s-sys_lv
+        fstype: ext4
+        opts: rw,noatime,nodiratime,relatime
+        state: mounted

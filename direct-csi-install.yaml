@@ -1,0 +1,708 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  annotations:
+    created-by: kubectl/direct-csi
+  creationTimestamp: null
+  labels:
+    app: direct.csi.min.io
+    type: CSIDriver
+  name: direct-csi-min-io
+  namespace: direct-csi-min-io
+spec: {}
+status: {}
+
+---
+
+apiVersion: policy/v1beta1
+kind: PodSecurityPolicy
+metadata:
+  annotations:
+    created-by: kubectl/direct-csi
+  creationTimestamp: null
+  labels:
+    app: direct.csi.min.io
+    type: CSIDriver
+  name: direct-csi-min-io
+  namespace: direct-csi-min-io
+spec:
+  allowedHostPaths:
+  - pathPrefix: /proc
+    readOnly: true
+  - pathPrefix: /sys
+    readOnly: true
+  - pathPrefix: /var/lib/direct-csi
+  - pathPrefix: /csi
+  - pathPrefix: /var/lib/kubelet
+  fsGroup:
+    rule: RunAsAny
+  hostIPC: true
+  hostPID: true
+  privileged: true
+  runAsUser:
+    rule: RunAsAny
+  seLinux:
+    rule: RunAsAny
+  supplementalGroups:
+    rule: RunAsAny
+
+---
+
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  annotations:
+    created-by: kubectl/direct-csi
+  creationTimestamp: null
+  labels:
+    app: direct.csi.min.io
+    type: CSIDriver
+  name: psp-direct-csi-min-io
+  namespace: direct-csi-min-io
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: direct-csi-min-io
+subjects:
+- apiGroup: rbac.authorization.k8s.io
+  kind: Group
+  name: system:serviceaccounts:direct-csi-min-io
+
+---
+
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  annotations:
+    created-by: kubectl/direct-csi
+  creationTimestamp: null
+  labels:
+    app: direct.csi.min.io
+    type: CSIDriver
+  name: direct-csi-min-io
+  namespace: direct-csi-min-io
+
+---
+
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  annotations:
+    created-by: kubectl/direct-csi
+    rbac.authorization.kubernetes.io/autoupdate: "true"
+  creationTimestamp: null
+  labels:
+    app: direct.csi.min.io
+    type: CSIDriver
+  name: direct-csi-min-io
+  namespace: direct-csi-min-io
+rules:
+- apiGroups:
+  - ""
+  resources:
+  - persistentvolumes
+  verbs:
+  - get
+  - list
+  - watch
+  - create
+  - delete
+- apiGroups:
+  - ""
+  resources:
+  - persistentvolumeclaims
+  verbs:
+  - get
+  - list
+  - watch
+  - update
+- apiGroups:
+  - storage.k8s.io
+  resources:
+  - storageclasses
+  verbs:
+  - get
+  - list
+  - watch
+- apiGroups:
+  - ""
+  resources:
+  - events
+  verbs:
+  - create
+  - list
+  - watch
+  - update
+  - patch
+- apiGroups:
+  - snapshot.storage.k8s.io
+  resources:
+  - volumesnapshots
+  verbs:
+  - get
+  - list
+- apiGroups:
+  - snapshot.storage.k8s.io
+  resources:
+  - volumesnapshotcontents
+  verbs:
+  - get
+  - list
+- apiGroups:
+  - storage.k8s.io
+  resources:
+  - csinodes
+  verbs:
+  - get
+  - list
+  - watch
+- apiGroups:
+  - ""
+  resources:
+  - nodes
+  verbs:
+  - get
+  - list
+  - watch
+- apiGroups:
+  - storage.k8s.io
+  resources:
+  - volumeattachments
+  verbs:
+  - get
+  - list
+  - watch
+- apiGroups:
+  - ""
+  resources:
+  - endpoints
+  verbs:
+  - get
+  - list
+  - watch
+  - create
+  - update
+  - delete
+- apiGroups:
+  - coordination.k8s.io
+  resources:
+  - leases
+  verbs:
+  - get
+  - list
+  - watch
+  - create
+  - update
+  - delete
+- apiGroups:
+  - direct.csi.min.io
+  resources:
+  - volumes
+  verbs:
+  - get
+  - list
+  - watch
+  - create
+  - update
+  - delete
+- apiGroups:
+  - apiextensions.k8s.io
+  - direct.csi.min.io
+  resources:
+  - customresourcedefinitions
+  - customresourcedefinition
+  verbs:
+  - get
+  - list
+  - watch
+  - create
+  - update
+  - delete
+  - patch
+- apiGroups:
+  - direct.csi.min.io
+  resources:
+  - directcsidrives
+  - directcsivolumes
+  verbs:
+  - get
+  - list
+  - watch
+  - create
+  - update
+  - delete
+- apiGroups:
+  - ""
+  resources:
+  - pods
+  - pod
+  verbs:
+  - get
+  - list
+  - watch
+
+---
+
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  annotations:
+    created-by: kubectl/direct-csi
+    rbac.authorization.kubernetes.io/autoupdate: "true"
+  creationTimestamp: null
+  labels:
+    app: direct.csi.min.io
+    type: CSIDriver
+  name: direct-csi-min-io
+  namespace: direct-csi-min-io
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: direct-csi-min-io
+subjects:
+- kind: ServiceAccount
+  name: direct-csi-min-io
+  namespace: direct-csi-min-io
+
+---
+
+apiVersion: v1
+data:
+  cert.pem: LS0tLS1CRUdJTiBDRVJUSUZJQ0FURS0tLS0tCk1JSUYzekNDQThlZ0F3SUJBZ0lDQitNd0RRWUpLb1pJaHZjTkFRRUxCUUF3Y1RFTE1Ba0dBMVVFQmhNQ1ZWTXgKQ1RBSEJnTlZCQWdUQURFU01CQUdBMVVFQnhNSlVHRnNieUJCYkhSdk1SMHdHd1lEVlFRSkV4UlZibWwyWlhKegphWFI1SUVGMlpTQlRkR1VnUWpFT01Bd0dBMVVFRVJNRk9UUXpNREV4RkRBU0JnTlZCQW9UQzAxcGJrbFBMQ0JKClRrTXVNQjRYRFRJeE1UQXlPVEUxTkRZd05Wb1hEVE14TVRBeU9URTFORFl3TlZvd2NURUxNQWtHQTFVRUJoTUMKVlZNeENUQUhCZ05WQkFnVEFERVNNQkFHQTFVRUJ4TUpVR0ZzYnlCQmJIUnZNUjB3R3dZRFZRUUpFeFJWYm1sMgpaWEp6YVhSNUlFRjJaU0JUZEdVZ1FqRU9NQXdHQTFVRUVSTUZPVFF6TURFeEZEQVNCZ05WQkFvVEMwMXBia2xQCkxDQkpUa011TUlJQ0lqQU5CZ2txaGtpRzl3MEJBUUVGQUFPQ0FnOEFNSUlDQ2dLQ0FnRUFzQkw4ZjRISkU5VlIKZWhBcFUvY2VtTStqMDRXVHhlWjJLZ24yTjZBNlF1RXVzMGZ4YzB5RDNqVXVHa3JOR0UxZzhKTHY5TE9neEhNLwpmSStZZHZnYnNUSWxxeHM5SjFnTGtSTW9uczNjemU2ODVwektkY2xkNGRVdG83OG1KSnMxSEovUXNKN0d5Z0dsCi9HbSt2ZXhBbmxBWjFkYkhxNVV5SUxDOWFzUU13LzlVV0c5VGI3R2VZMHVzUEVHRG1CaGhTVDNmbERJekVBYnMKbEJSVnE3TFk3b3VRaHZuMlJsZDgzem53Y1BsUHlqaWdWalpTck1SUkxZbXpPNnF4MmQvaDkrc28xTXgweFRMRApHMXYwUUFHY0hDV1BOZ2lkSlZXOEVzalA0Y3puVFE3REtlaHpxUWU1cVNta3pGWndOei9jbUI4RzZuUWxxUHVPCnhmVUNpbkZobStNSjRtd0wxVVF5Z0dFOXhtL21PZTBUS1lmcTAyMVhONzc3RWNwb1lOeFlhZ0gyanhBVTJPQ0oKbmFHcFIzU0MvSFhrWjg4SzZ4enJ6N0t6RHVjZnoxbUVjTk1GNGFNY2RqNWw0ZkZtWjJEMGdRbmZNdWZWMmNwbQpSNXRRcWdxek5ZZnRHUEpOeHFscmdaL1VhU1VjcE1nejdDdFg5NjNBWlRJMTJiaE1xV21zK2U0aXdxUEN6dzd1CmpDOHBqVDBDSkkyUVJxRWxpWU1GNHhPQmZoRFZXbUgxN3h0Mk1hZkYwRzJoak5sdEJmcU81SXhTcWxSaUhsNWsKYXdXbXBUVCtiQjRwYXdCYTJKNWFkM0xyY1Q4S09vc1EzcVpVN1ppRmlJcVF4QytWUDBjUy9rOGRhM3JqUmxITworN0R5K0FiQW9saVVDeThnTk5JVlJ5T1RFSm9RL3lzQ0F3RUFBYU9CZ0RCK01BNEdBMVVkRHdFQi93UUVBd0lICmdEQWRCZ05WSFNVRUZqQVVCZ2dyQmdFRkJRY0RBZ1lJS3dZQkJRVUhBd0V3RGdZRFZSME9CQWNFQlFFQ0F3UUcKTUQwR0ExVWRFUVEyTURTQ01tUnBjbVZqZEdOemFTMWpiMjUyWlhKemFXOXVMWGRsWW1odmIyc3VaR2x5WldOMApMV056YVMxdGFXNHRhVzh1YzNaak1BMEdDU3FHU0liM0RRRUJDd1VBQTRJQ0FRQW1ycStpcHBhK2k5bThkdEdVCkNacCtwR1dJUEo4YmpBWk9MMG5TYzZBSldkVm53RXdGdjJ4dVZwRS9RQWNwQUVnb2lwTFRFNG1jN3RrT2ZPbXEKQkgrRlBZKzBxcWo5ME4wR0lYeVBmSzJPY3BxQUF3aWRsRCt4MCt0YkprOHYvcVhGRTRKajlmdEdPNHBQRVpnYQpHQlBkTUxTckJ3bkdDSEk0SnVCYnNNblZRdHdRYnZZVXMzRnVOeFVXNUprK29PTWErOVRNQTl5cWI0YzJ2SEU3CnY1U0U5SnhiZU01NzREcGROamJxQUlFa3ZkWGFGbTNxTXZyd0NBRmZlNlZPUGFrajdxZEE1NGt5YTlIVGcyZngKUW44SVBDV0JrMEpiUmxHcVpGa0s3bUNneWI0TExndDBiYk5IbjkyL3dleXNkWWVsZFRWd1c0TXp1M01mTXg1MgpiMFFOK24vZWN2RjZzYnllWk9COUtTUVFxRDZnNFU0cXhwdWdVTTBOT0FyRDQxdzVVT203cjRURU8xWWp1MzVWCnNqdys4ZjNoNkMvOUdOUlViL3IxVnZSVE5kNHlqTDB4MUhaTzdlTk4xUGpnM0dYOXo2aG5rZURhMjJBVkQ1RmcKQ0doa2VqMmtyTHhFSzlhUHluTVRqQkRLNW5vcWhNOFdEcU5Ic0hsd2hHbGFwM2RQNWdKdzZMOHRnMXFiaDZTcQo5bVNWRkx4d3VWb3FOaDJHUFJiSEJXU21ReTNuendCWEpVNjNkclZNdCtWWkNKS1MwaGNnOGNGeko4Vi9UV0grCm1NVXp2V0RqVy90VWpSZGJPcEFhVDFFUTZ5UGVURVBqN2NsZ1R3Qk8xWFdpcFN1UlpQcEFWemNzbUhWSnppOFcKSGlDNmlDczBkenhpMURKem9SWlc4dG9ibnc9PQotLS0tLUVORCBDRVJUSUZJQ0FURS0tLS0tCg==
+  key.pem: LS0tLS1CRUdJTiBSU0EgUFJJVkFURSBLRVktLS0tLQpNSUlKS1FJQkFBS0NBZ0VBc0JMOGY0SEpFOVZSZWhBcFUvY2VtTStqMDRXVHhlWjJLZ24yTjZBNlF1RXVzMGZ4CmMweUQzalV1R2tyTkdFMWc4Skx2OUxPZ3hITS9mSStZZHZnYnNUSWxxeHM5SjFnTGtSTW9uczNjemU2ODVweksKZGNsZDRkVXRvNzhtSkpzMUhKL1FzSjdHeWdHbC9HbSt2ZXhBbmxBWjFkYkhxNVV5SUxDOWFzUU13LzlVV0c5VApiN0dlWTB1c1BFR0RtQmhoU1QzZmxESXpFQWJzbEJSVnE3TFk3b3VRaHZuMlJsZDgzem53Y1BsUHlqaWdWalpTCnJNUlJMWW16TzZxeDJkL2g5K3NvMU14MHhUTERHMXYwUUFHY0hDV1BOZ2lkSlZXOEVzalA0Y3puVFE3REtlaHoKcVFlNXFTbWt6Rlp3TnovY21COEc2blFscVB1T3hmVUNpbkZobStNSjRtd0wxVVF5Z0dFOXhtL21PZTBUS1lmcQowMjFYTjc3N0VjcG9ZTnhZYWdIMmp4QVUyT0NKbmFHcFIzU0MvSFhrWjg4SzZ4enJ6N0t6RHVjZnoxbUVjTk1GCjRhTWNkajVsNGZGbVoyRDBnUW5mTXVmVjJjcG1SNXRRcWdxek5ZZnRHUEpOeHFscmdaL1VhU1VjcE1nejdDdFgKOTYzQVpUSTEyYmhNcVdtcytlNGl3cVBDenc3dWpDOHBqVDBDSkkyUVJxRWxpWU1GNHhPQmZoRFZXbUgxN3h0MgpNYWZGMEcyaGpObHRCZnFPNUl4U3FsUmlIbDVrYXdXbXBUVCtiQjRwYXdCYTJKNWFkM0xyY1Q4S09vc1EzcVpVCjdaaUZpSXFReEMrVlAwY1MvazhkYTNyalJsSE8rN0R5K0FiQW9saVVDeThnTk5JVlJ5T1RFSm9RL3lzQ0F3RUEKQVFLQ0FnQW4wa04wK3Y5bEV1dTRkWXREU0RLTlVQaTJVQkdad29PYkFtSEROdU8yV0lOZFhMb0kzNWM3WEQrdgpCcGZZRlRnRmNOWUFPOWZ5VmpaWGo0cGw3YnNsbWpmV3VQUmR2NVh1RzYwbUxWenczanV1MUdzZHRJc2RGaithCk54TURXRzdzcUdCa2NhUjM3Mk9BOE5HSTFyUE9ta01kajlQY3hJTnZ6VWtwcW1sUXNxQjYxOExCRWlUR1JFa1IKMzZkSmNNb2Y3SFJ5YWVBT2tlSlRvejIwOVdBR28xM3VpUDNmN3MxNUZ2dUFNWUtRTTdwZmhTMnhrVHppMWEvSgpvTk5VZVVQNzlCMXA4MHU5aGJ1R3BvZFpLb1FLQVp5Z0ZkYWtxUDArS2xpSnN2UGxBNSswRExTTDJBbHZidEdzCnZTZm45dk9ISEExT1hUSmZRM1dJNDk3TlBOTmNOQUdrbDRVZ25ScnR2d3hTRGwxZHZIclphek92eWZmR2pib2QKcysyR0daK29CdFhYSkdLZ0UwL2gzRnYyMUJLZDZKRjl4WEVrOXZTQ1N4L2VsQTc5N0FPaUFscnZqKzRCNGVBdApVNUdieTZRemlKalNXN0Q2V3RBeG94NWpYL2RKd2tMZnRCbFZlWHExMmhMckVVSlR6cUlHaHJyQXNxdVJMU2h3CkpLR2h1bHJjclNiYnkzbnNHZnpzbmxBS2VIWmdydXZQZ2o0RWYxTlFDcUh6cWhIWExHS3NENkNWdDZ0Z0cydUIKR2p0SUR4cDVrYkoxREVCMUhPYzkvMjB2dWZMTW5PM3RQcHhhNTRLTVBTQnpwWENCY3pIakJmbXN4TTZiYzN4QwpTVVp0WjBuSm0vUlJsR2RwemNLV0tnUkozWFFNNHR3S3hNZytXUWxDTmFtbEd2QVFNUUtDQVFFQXh0eDROY0VQCnlmaUJWYVJJbW04WXU0VVZPaU9nODR2dW10alVHVzYwbEhzM3BNUXVzRnJTZDVsc2pZU3hLSXdGSG5CSTZkaHIKejBtZ2VOOXcxQkRCTjZucndDYkNjbUxCUE8xZGxNWXRQZXRDWHpmMmc0VExUTnZLVzY4bTB1RzZUYjNLY3dGeQpROEMwRUpSNXF5aVlWb1lFNHU5SzRWeVVlbmVRSWxsOC9naWZBNFlpQUQ2eDFqamhsYmlDa3ZyMm4zb1p5NW80Clo3djBIVFdLdENhWEVxNnRRaDhGZEpJV253YUpwRFk1cGpVOFU0aE5jM29jdFFTaGFTNHdrbkxnRzRxb3NyNVYKRjIxMi9oMTk3bFhIZENUR0tES01KYkQwN1Q0V1VMK3ZPSy8rOUMwQUVVSDJPamNkR0VoMEE0Si9EeDhER2RHagpxY3Z6a1p2TWd4cWxWd0tDQVFFQTRxcGh6RWlnbmFRcTRZOHR0MXFHcnkyOWJUcFk1TkVMb05MRVRqckFnTlIvCmRNSHdSdmFTUnM5c3FWOXRvNEhDNG01eklWSThTYUszTWNaMkxhRkc4RUhXbUpKNHg5TTBCZlhhalRaTFA2d3EKUE41aWphUk9GbzdlVTdNNWgvdFJaemZmdkJ4a0dhczZvak5nWlNzeUhUbFZvcTdPdzY0d2h6ZDZLMndqUkVsOQpGRmtkRjU3dFQ4Uk5ZVjNTZENBODd4Und4NkduVGFmNG1jRmtmYVU5K0FaWHZvWVgvT0dWK05MMnJGamFVQmVaClM5TEhTMFlDZDVkYUlPeGx1aW5pS25CdStiOU9wTWZXYkRuUXp2VXo2a1R2NkNLdHZ3c21objZ3OCsyR0phN04KN2FWQzh6TGY0QndyNU1xa2wyWnhwbHpKNUNKbXQxWTVYdGdwN2k1Y1RRS0NBUUVBcENGVmlqQlZZc0ticE43YQpHYlMyT2hkbVpMMEJXK0pUeGpST0lzdVBlYm1WUElXN2IwMFd4eVczUmJxT0tjUWZlWGI5aHh4Y0p4TkN3bURSCkZBYmNJcUE1ZHpmR1ozaUF1MVBDV0VlVkViVDU2L01ab0lWYThvMjVvQ0NaTDVhbEdRTWJjLzV1bStNUisxbEEKYm5jci9NWFNoS2N5SzMwcEEwZHBqQ0JHSExscTNSSzVQM0IvZ1NzamJWcURVdUtWNlJ4eTYrdld3QytPRlFtYQorSU9kVHdzaTd4OEJkcXdZeFpvMHduY0s3OWFpZXVOVjRZaVk1d0x5WWdpQWlHOE43MDFyWFZQZ2tWeUV5TW40CnBWemhLVWdzMFFLZlQ0Q1ZOcloyM3FERzgwZTNhenMxQWdscU83US9iRXBvam5rSGU2aUIrNjVlb1ljMitpZ1kKRE9GU013S0NBUUVBakZRcjVBdDYxTjRVWmp6OGNxMnJBTDF5cnpNV1llTkNMYmtQSzllWDRxcXNsaDZUb1h0NgpLRGkyNzAxVFZZMDZtSEVFK2pZdGVQRXlOYkRHN1kwUm5DRkd1SUxHSUFDVURyU2RNQnZURG9LS1M5RHFkd0tvCkRiTTUxZHY1M0VRdHE1ZWQvcG9kSnY4cGQ4NFMrYzk2WVRsajJTb2NmRzFWUWdHSXMyVnBtQmRmUnIrOUVTaWwKaDJMaS9Vcld4bXBIRDBVNlpYMmhWS1NQZHJHU2cyOVFKRVBaQXUyRjRGdlJPNUZ3Z2xjb0libmFnR1RvV2FQbwpWeDN2QUw4YVk5MFdWbXZ4YU5HVjROS1AzOFVUajIyalRJQ05mc3dwZ1VOb0FKQmpBVUdtY2FIOWdBbDJuNVo1Cm9BZ1E3TDdBazdNcTNYSkkwK0t3Y1FVQzA4TkVnbDlWYVFLQ0FRQWVhdWZXTTVoYTBxQjd2ZWQ3UnFvOCs2OVgKVWM3dlpNTGJvbzdLOVpNMEIwbVFMTisxTGFSdFBZWWdDbXpPaldVVkVGbXpDdkUxRGFKelhoanlLK2ZlMit1dwpicFBvY1o1V2VBdDU1RHhTU3VWRlVlS0dvNmFUMlF4T2ZScHNWRVVaNXdmVkVYYVdCQjBJbGpYeUhaaTFWNFYrCi92V0pkNGJsMVl2TzVRNDA4aklGZkliekt6MEpDc2Uwd1pMNzh2bFBrQmlQeHp2VkNYbmVaRlpIL1hjRHhFT2sKdjBzaHcyZysrbXNRM1UrYWVUUHlmQzE2aXM1c1BlYXppaDRvWmh1RUwzM2FQdEpjK2VKeU5BUUN4YVlWdlJPRwpHTzZlaFIvbUVDaWw0Qk9zUzIyTXM0aXZvd1Foa2tWbUZmTitrNVZDYks5OXovVjcrTEpMdDAzSFNsLzMKLS0tLS1FTkQgUlNBIFBSSVZBVEUgS0VZLS0tLS0K
+kind: Secret
+metadata:
+  creationTimestamp: null
+  name: conversionwebhookcerts
+  namespace: direct-csi-min-io
+
+---
+
+apiVersion: v1
+data:
+  ca.pem: LS0tLS1CRUdJTiBDRVJUSUZJQ0FURS0tLS0tCk1JSUZ2ekNDQTZlZ0F3SUJBZ0lDQitNd0RRWUpLb1pJaHZjTkFRRUxCUUF3Y1RFTE1Ba0dBMVVFQmhNQ1ZWTXgKQ1RBSEJnTlZCQWdUQURFU01CQUdBMVVFQnhNSlVHRnNieUJCYkhSdk1SMHdHd1lEVlFRSkV4UlZibWwyWlhKegphWFI1SUVGMlpTQlRkR1VnUWpFT01Bd0dBMVVFRVJNRk9UUXpNREV4RkRBU0JnTlZCQW9UQzAxcGJrbFBMQ0JKClRrTXVNQjRYRFRJeE1UQXlPVEUxTkRZd01sb1hEVE14TVRBeU9URTFORFl3TWxvd2NURUxNQWtHQTFVRUJoTUMKVlZNeENUQUhCZ05WQkFnVEFERVNNQkFHQTFVRUJ4TUpVR0ZzYnlCQmJIUnZNUjB3R3dZRFZRUUpFeFJWYm1sMgpaWEp6YVhSNUlFRjJaU0JUZEdVZ1FqRU9NQXdHQTFVRUVSTUZPVFF6TURFeEZEQVNCZ05WQkFvVEMwMXBia2xQCkxDQkpUa011TUlJQ0lqQU5CZ2txaGtpRzl3MEJBUUVGQUFPQ0FnOEFNSUlDQ2dLQ0FnRUEyYlN1bVphTXBVRlMKbHRlWGhoaTJTNHlPUFpENXA4R1o5dURlcmlvcnY2V0cvTUtsVENKenNqK09PTUpkc3ErWDNhY2FiOFhMelVqQgpOSVZaOCt4UFZoM0REOTVSbUppeXF1NUo3YjdIaDFLTy9EMC83SVJMZFpXdEV2dzc4bTVldHlHNUJMeUxsUGxwClJRa1VYdytZa2tVNy9SWm82clBmVFZ6SHNXOUZITWR6aTZ2Q0RJZWc3eXdsVnpQeTE1VXgvYWJEOUtWOG84dVoKalNrZ1ZQQ213VnJSU3R2OUdSdGxxbW1KdUdEUDVyVTdybWQvK3hMWGw0S3hFRU1mU2xMb1dVRzYrM240WGcvMQpLVlIwNjk0YW43Nmh0NDBDS2F6SG91RFlHSGdEZk8yQ2pzREJMSm1xcDBUNk0rbUVnY1JXYTBzSDBqeTJmNjhLCjZ0UElycW9aK1dXUDRaSDF1aDRDOWsvc3pwVjhrK21LZjIxc0RIVWgyQ0pSaTVBS1hQUldzbzFBay9lTmdzWmoKSzdZR2VIbmZURjRXVEc3dUJ4alAzMVl6VTBZaGorNnFMemJWd0x4THpla3QrMlFxUk1DKzF0aEk4UlcxSzFULwp0eit6a0Vwd2t6UXZZRDJMZ3ZSTm1KVmRhZUIrNFBzWDJmYktadVY1Q1lpVFM4VVVKOE5XR1dNWHdHazY5dXdiCmNRQzN5R2JaUExOa3hVVzZYNURQWVpJUXcvZ2ROY3FzNllxTkpNRFVEQWdGQU5kWU1qenJXWWF0b1NESjZvQUYKYVVWRDhlMUE3c0JpdFJaQXZqS3dWS2k4UFVCbzdweHBPdFhBcmV6M2NwSCt5eEk0VUk1VmFUYWxBQUpRZktMSQpES3F5OHRMYWhrQUM4ajA2SDkvejJETzN3QUY1M1dzQ0F3RUFBYU5oTUY4d0RnWURWUjBQQVFIL0JBUURBZ0tFCk1CMEdBMVVkSlFRV01CUUdDQ3NHQVFVRkJ3TUNCZ2dyQmdFRkJRY0RBVEFQQmdOVkhSTUJBZjhFQlRBREFRSC8KTUIwR0ExVWREZ1FXQkJSdERnbTk1OUdhQ01TeVJlaGg3aXpuOWFZNUR6QU5CZ2txaGtpRzl3MEJBUXNGQUFPQwpBZ0VBMk1vSEtuRUNUbm1KRjFvRHVyZUkwa2F1aHgwdXJDOUc3ZU11N3BWYjZqR3I4TU54MUpuMi91amlWQ3FxCkRYR2xzTjZqUVF3Z2F5Tms1UkM0ck1manhJMm04djhibzk5VStxS3ZBZTE2clFTTVlyN1lBUlA0OXNQdmFFa2IKN1B3UkpPNkFQRXNKaENsOTRPeUxLaTZOTDd5aDYyS0J6WWd1MGt6TE0wUHhUL2hOZlJHUTFsWTNidWlFZWFTNAovTmNyNkw0c3BPWXJmQStIMkpFaVh2ZVd6YS9OSFhrWEs5U3NDTHB5c2F1cVIzN1pGai9DdjJ0eks3enJ1QUs3CkE1cUpIMkhGY1J1VFVUdUo4T042alBhdEp0MEdsMElZUkVjSzBESVlPWGdsb3VLMHlZcmJQeHQ0WkY0SzgxRHEKZTZsUnNNbE9tWEMrMm1UUGp6TTFIajN0Slh3cE83YURmMWUxUlRIK3E1eUNRZkcrbGVVRXYxNlZpNUM5V2JJNwpzeHFZMnNHbUt6aXhrdldyQmFnTTV2SGJpNk5oUGV6R1ZKMWMrcHdOSnlmcnZFcTZaWTNDTTZhcWtiUHduMzFPClp0V1o5dEp3ZkxCV2NPYUxySDR0MHd3c3ZYKzg3L3c0ZTc4c0ZIcW5QbTg1Q1htQ2sxN2k4MEJvRE9DQXdpZTMKd2ZINkFQcmVVbnc3ejRtSEVIUnFSTWwzcE1FQWVKR296OEZBa0RSS3UzMmRxMGdzUXZGV0htSWlxb3IveXAyeQpqeUJSMHR1bXN5Q0pzWkFpZFFSMFBRL1hOaVVqc0o5cE40VjVIVFNGOElPR1lJV0dOWW9ReDBlSGZvRkF2MHF5CjAzS09HKzAvSVdsVkE5aEdaN2RlVEZqeU92TmNhVmcxUzc1eTVtbnpUYkV2YWM0PQotLS0tLUVORCBDRVJUSUZJQ0FURS0tLS0tCg==
+kind: Secret
+metadata:
+  creationTimestamp: null
+  name: converionwebhookcertsecret
+  namespace: direct-csi-min-io
+
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  creationTimestamp: null
+  name: directcsi-conversion-webhook
+  namespace: direct-csi-min-io
+spec:
+  ports:
+  - port: 443
+    targetPort: convwebhook
+  selector:
+    selector.direct.csi.min.io: direct-csi-min-io-16mss
+status:
+  loadBalancer: {}
+
+---
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  annotations:
+    created-by: kubectl/direct-csi
+  creationTimestamp: null
+  finalizers:
+  - direct-csi-min-io/delete-protection
+  labels:
+    app: direct.csi.min.io
+  name: directcsi-conversion-webhook
+  namespace: direct-csi-min-io
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      selector.direct.csi.min.io: direct-csi-min-io-16mss
+  strategy: {}
+  template:
+    metadata:
+      annotations:
+        created-by: kubectl/direct-csi
+      creationTimestamp: null
+      labels:
+        selector.direct.csi.min.io: direct-csi-min-io-16mss
+      name: directcsi-conversion-webhook
+      namespace: direct-csi-min-io
+    spec:
+      containers:
+      - args:
+        - --conversion-webhook
+        image: quay.io/minio/direct-csi:v1.4.3
+        livenessProbe:
+          httpGet:
+            path: /healthz
+            port: convwebhook
+            scheme: HTTPS
+        name: direct-csi
+        ports:
+        - containerPort: 443
+          name: convwebhook
+          protocol: TCP
+        readinessProbe:
+          httpGet:
+            path: /healthz
+            port: convwebhook
+            scheme: HTTPS
+        resources: {}
+        securityContext:
+          privileged: true
+        volumeMounts:
+        - mountPath: /etc/certs
+          mountPropagation: None
+          name: directcsi-conversion-webhook
+      serviceAccountName: direct-csi-min-io
+      volumes:
+      - name: directcsi-conversion-webhook
+        secret:
+          secretName: conversionwebhookcerts
+status: {}
+
+---
+
+apiVersion: storage.k8s.io/v1
+kind: CSIDriver
+metadata:
+  annotations:
+    created-by: kubectl/direct-csi
+  creationTimestamp: null
+  labels:
+    app: direct.csi.min.io
+    type: CSIDriver
+  name: direct-csi-min-io
+  namespace: direct-csi-min-io
+spec:
+  attachRequired: false
+  podInfoOnMount: true
+  volumeLifecycleModes:
+  - Persistent
+  - Ephemeral
+
+---
+
+allowVolumeExpansion: false
+allowedTopologies:
+- matchLabelExpressions:
+  - key: direct.csi.min.io/identity
+    values:
+    - direct-csi-min-io
+apiVersion: storage.k8s.io/v1
+kind: StorageClass
+metadata:
+  annotations:
+    created-by: kubectl/direct-csi
+  creationTimestamp: null
+  labels:
+    app: direct.csi.min.io
+    type: CSIDriver
+  name: direct-csi-min-io
+  namespace: direct-csi-min-io
+parameters:
+  fstype: xfs
+provisioner: direct-csi-min-io
+reclaimPolicy: Delete
+volumeBindingMode: WaitForFirstConsumer
+
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  annotations:
+    created-by: kubectl/direct-csi
+  creationTimestamp: null
+  labels:
+    app: direct.csi.min.io
+    type: CSIDriver
+  name: direct-csi-min-io
+  namespace: direct-csi-min-io
+spec:
+  ports:
+  - name: unused
+    port: 12345
+    targetPort: 0
+  selector:
+    app: direct.csi.min.io
+    type: CSIDriver
+status:
+  loadBalancer: {}
+
+---
+
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  annotations:
+    created-by: kubectl/direct-csi
+  creationTimestamp: null
+  labels:
+    app: direct.csi.min.io
+    type: CSIDriver
+  name: direct-csi-min-io
+  namespace: direct-csi-min-io
+spec:
+  selector:
+    matchLabels:
+      selector.direct.csi.min.io: direct-csi-min-io-06fvi
+  template:
+    metadata:
+      annotations:
+        created-by: kubectl/direct-csi
+      creationTimestamp: null
+      labels:
+        selector.direct.csi.min.io: direct-csi-min-io-06fvi
+      name: direct-csi-min-io
+      namespace: direct-csi-min-io
+    spec:
+      containers:
+      - args:
+        - --v=3
+        - --csi-address=unix:///csi/csi.sock
+        - --kubelet-registration-path=/var/lib/kubelet/plugins/direct-csi-min-io/csi.sock
+        env:
+        - name: KUBE_NODE_NAME
+          valueFrom:
+            fieldRef:
+              apiVersion: v1
+              fieldPath: spec.nodeName
+        image: quay.io/minio/csi-node-driver-registrar@sha256:843fb23b1a3fa1de986378b0b8c08c35f8e62499d386de8ec57801fd029afe6d
+        name: node-driver-registrar
+        resources: {}
+        terminationMessagePath: /var/log/driver-registrar-termination-log
+        terminationMessagePolicy: FallbackToLogsOnError
+        volumeMounts:
+        - mountPath: /csi
+          mountPropagation: None
+          name: socket-dir
+        - mountPath: /registration
+          mountPropagation: None
+          name: registration-dir
+      - args:
+        - --identity=direct-csi-min-io
+        - -v=3
+        - --endpoint=$(CSI_ENDPOINT)
+        - --node-id=$(KUBE_NODE_NAME)
+        - --conversion-webhook-url=https://directcsi-conversion-webhook.direct-csi-min-io.svc/healthz
+        - --driver
+        env:
+        - name: KUBE_NODE_NAME
+          valueFrom:
+            fieldRef:
+              apiVersion: v1
+              fieldPath: spec.nodeName
+        - name: CSI_ENDPOINT
+          value: unix:///csi/csi.sock
+        image: quay.io/minio/direct-csi:v1.4.3
+        livenessProbe:
+          failureThreshold: 5
+          httpGet:
+            path: /healthz
+            port: healthz
+          initialDelaySeconds: 300
+          periodSeconds: 5
+          timeoutSeconds: 5
+        name: direct-csi
+        ports:
+        - containerPort: 9898
+          name: healthz
+          protocol: TCP
+        resources: {}
+        securityContext:
+          privileged: true
+        terminationMessagePath: /var/log/driver-termination-log
+        terminationMessagePolicy: FallbackToLogsOnError
+        volumeMounts:
+        - mountPath: /csi
+          mountPropagation: None
+          name: socket-dir
+        - mountPath: /var/lib/kubelet/pods
+          mountPropagation: Bidirectional
+          name: mountpoint-dir
+        - mountPath: /var/lib/kubelet/plugins
+          mountPropagation: Bidirectional
+          name: plugins-dir
+        - mountPath: /var/lib/direct-csi/
+          mountPropagation: Bidirectional
+          name: direct-csi-common-root
+        - mountPath: /sys
+          mountPropagation: Bidirectional
+          name: sys-fs
+        - mountPath: /etc/CAs
+          mountPropagation: None
+          name: conversion-webhook-certs
+      - args:
+        - --csi-address=/csi/csi.sock
+        - --health-port=9898
+        image: quay.io/minio/livenessprobe@sha256:928a80be4d363e0e438ff28dcdb00d8d674d3059c6149a8cda64ce6016a9a3f8
+        name: liveness-probe
+        resources: {}
+        terminationMessagePath: /var/log/driver-liveness-termination-log
+        terminationMessagePolicy: FallbackToLogsOnError
+        volumeMounts:
+        - mountPath: /csi
+          mountPropagation: None
+          name: socket-dir
+      hostIPC: true
+      hostPID: true
+      serviceAccountName: direct-csi-min-io
+      volumes:
+      - hostPath:
+          path: /var/lib/kubelet/plugins/direct-csi-min-io
+          type: DirectoryOrCreate
+        name: socket-dir
+      - hostPath:
+          path: /var/lib/kubelet/pods
+          type: DirectoryOrCreate
+        name: mountpoint-dir
+      - hostPath:
+          path: /var/lib/kubelet/plugins_registry
+          type: DirectoryOrCreate
+        name: registration-dir
+      - hostPath:
+          path: /var/lib/kubelet/plugins
+          type: DirectoryOrCreate
+        name: plugins-dir
+      - hostPath:
+          path: /var/lib/direct-csi/
+          type: DirectoryOrCreate
+        name: direct-csi-common-root
+      - hostPath:
+          path: /sys
+          type: DirectoryOrCreate
+        name: sys-fs
+      - name: conversion-webhook-certs
+        secret:
+          secretName: converionwebhookcertsecret
+  updateStrategy: {}
+status:
+  currentNumberScheduled: 0
+  desiredNumberScheduled: 0
+  numberMisscheduled: 0
+  numberReady: 0
+
+---
+
+apiVersion: v1
+data:
+  cert.pem: LS0tLS1CRUdJTiBDRVJUSUZJQ0FURS0tLS0tCk1JSUY0ekNDQTh1Z0F3SUJBZ0lDQitNd0RRWUpLb1pJaHZjTkFRRUxCUUF3Y1RFTE1Ba0dBMVVFQmhNQ1ZWTXgKQ1RBSEJnTlZCQWdUQURFU01CQUdBMVVFQnhNSlVHRnNieUJCYkhSdk1SMHdHd1lEVlFRSkV4UlZibWwyWlhKegphWFI1SUVGMlpTQlRkR1VnUWpFT01Bd0dBMVVFRVJNRk9UUXpNREV4RkRBU0JnTlZCQW9UQzAxcGJrbFBMQ0JKClRrTXVNQjRYRFRJeE1UQXlPVEUxTkRZeE1Gb1hEVE14TVRBeU9URTFORFl4TUZvd2NURUxNQWtHQTFVRUJoTUMKVlZNeENUQUhCZ05WQkFnVEFERVNNQkFHQTFVRUJ4TUpVR0ZzYnlCQmJIUnZNUjB3R3dZRFZRUUpFeFJWYm1sMgpaWEp6YVhSNUlFRjJaU0JUZEdVZ1FqRU9NQXdHQTFVRUVSTUZPVFF6TURFeEZEQVNCZ05WQkFvVEMwMXBia2xQCkxDQkpUa011TUlJQ0lqQU5CZ2txaGtpRzl3MEJBUUVGQUFPQ0FnOEFNSUlDQ2dLQ0FnRUFwNnN3eG9kdHZCKysKdi8vbzdLSnl0MHJuWWpXcGxqR1kzc0poeUVRdWUxOFY4dWxYTzBPOUxvaUZLR3BleTdsNU5wY2VzMm11anFxagpKZ3BRWGJZbVlIeVE0T3FzOTVrTVd4dlZYcm4wTWQyV0sxSW1ZekF1UFlPYTBVQU1rM1N0RUYyS3JCUm56UWNhCjZVT1MzdGI5dmFnYmdzbDBPQnM5NkMrN2xja1k2d2tpektFNTVzZmVCM2NvM0kzSDhLcWdtTFhLZjZvamJxV0IKd1F5eUtUK0FJTHlXVGNLM0IxS0lGeXNieVhVNHN0aWltSVI2QXlBcFZNdkdsc25DS2dYR2x1UW00UTVnS3RRegp4amloaEttRHdnNDFMdFVMS1ViUGdza3REdGd1ZTFCZEowREYzNUhKTDl5eEtWUjZINUFBakUxYVE2WkZuQjcxCmQ0b3hQL3A2T1dNZ3Z5YUdvWFV0blBtY05HQi9Ma0owQmZoZDNJR1dwdVM3NUNQaktzdEpmVE5IR3NlZks0TFUKNnUybXBSZzVTQ3JTUXczZUl2a1c4SndmR3MvZ0orT3UwKzVta292d0I2MmZMOWtOYTVNb3NMOEtmUEZxNkJMRwp0WURCUlJSVjF1TnVCYjJTYjh3YzF6WHVxdUJtSTQ2cXExY0FVbG44NWFXMi9WQUtIWGpScGhCMVhmdHRrN294CmNSQmZZOU9wdlBmQ2hTTkpNNzRSa05janZXRE1VTUQ5dnRLSmkzOHNGSTkycWc3RjRyNEFLVWxSQWpzaVRGWjYKczM1VXV0dE5LT2Z4blNqV1JZMjU1VG9qZUhhRVFJMHlnODliK25FR0VXeXJNMmxWWDlUMjNjblBWdTR4c0FCKwprcThtb3kwRGFPMGxHY3o4c0tFcTJyTFlHa09YWEgwQ0F3RUFBYU9CaERDQmdUQU9CZ05WSFE4QkFmOEVCQU1DCkI0QXdIUVlEVlIwbEJCWXdGQVlJS3dZQkJRVUhBd0lHQ0NzR0FRVUZCd01CTUE0R0ExVWREZ1FIQkFVQkFnTUUKQmpCQUJnTlZIUkVFT1RBM2dqVmthWEpsWTNSamMya3RkbUZzYVdSaGRHbHZiaTFqYjI1MGNtOXNiR1Z5TG1ScApjbVZqZEMxamMya3RiV2x1TFdsdkxuTjJZekFOQmdrcWhraUc5dzBCQVFzRkFBT0NBZ0VBbTdHb2lKMStpU3hGCnhBTCttZmNoNnVoZDNPN2VvL1kxWUxNNTBwS2ltTm93dGdYWDNGZTFXdFl1dVpTd3M2QnNQbExhRG1WcnY1dWcKMnJVeFR4OTZqaFlydzZiT0JGQk5lMWFET1FScG9lY1pWNkhOTi9Bb09oYjZBNE94dFlQR1R4dWxpMi9panJKMApKRzk4d3VZSzZWTVBWS01FdUJuL3pjd1lpeGFrdVJFT2RmTXFoUGFXc2ltZ1VKdGRqLzBXY1p0OTJpajlOeUh5Ckp5eFhXdktvbUJwdXBsbGVuUTlCeW4ydWp0MjhWR2E1MFA4RTdNcHJxQWk0Z2RvN1o4emErN3ZTcVAzR1Z0amYKSHVkMjFaMnJDY3VobExDTjZ1bldQaXNkTFRvZzJ5LytycCsrMG9KLzk4bXUxUy80NDZoU05xbEwvZmpWT2R6eApJVlhIVHVKT20yTG00VDA5THpaR1dkY3REQU1icmk4S2VXeWtXcXRIeFJiZXphQ2U1aDFRY0t5bGxNUzV2TkkxCjRZL3hVUThnOEhoSTZzQVpReHI4ZU9kOXhZaHFqUWhselcwZjBFMzA4QmhkQzlXRXYzR0xUT0k1N0ZmVEdBNHIKSUMwS2RYeGVWTSt6Z3FhL0FEVDZsN05pb2tHVTVtbTE5V1kzZE1GWHViaHc0aWVCT0F0b2dDTXRYTEErZ2djWApML3JmU0xHVGlzaFNCdmpyblJCWXJvWmJ0UVBqc2drSDY1RlJJZGhhcCt6clNrMlJQTjRYU3l4L2g3SzN0M29zCjhYcDNPNEZiUEVWYk01VlVrY0pDUC9xWmp0ZFhBbDlkS2xRUE84UExtSjYzSm1EVTM5Vk9MUzJHa1YxaGltSzIKTHpTbDN1cGVBL2VxeHUyVHJXR1dNQ3RReXcyZ0dnYz0KLS0tLS1FTkQgQ0VSVElGSUNBVEUtLS0tLQo=
+  key.pem: LS0tLS1CRUdJTiBSU0EgUFJJVkFURSBLRVktLS0tLQpNSUlKS0FJQkFBS0NBZ0VBcDZzd3hvZHR2Qisrdi8vbzdLSnl0MHJuWWpXcGxqR1kzc0poeUVRdWUxOFY4dWxYCk8wTzlMb2lGS0dwZXk3bDVOcGNlczJtdWpxcWpKZ3BRWGJZbVlIeVE0T3FzOTVrTVd4dlZYcm4wTWQyV0sxSW0KWXpBdVBZT2EwVUFNazNTdEVGMktyQlJuelFjYTZVT1MzdGI5dmFnYmdzbDBPQnM5NkMrN2xja1k2d2tpektFNQo1c2ZlQjNjbzNJM0g4S3FnbUxYS2Y2b2picVdCd1F5eUtUK0FJTHlXVGNLM0IxS0lGeXNieVhVNHN0aWltSVI2CkF5QXBWTXZHbHNuQ0tnWEdsdVFtNFE1Z0t0UXp4amloaEttRHdnNDFMdFVMS1ViUGdza3REdGd1ZTFCZEowREYKMzVISkw5eXhLVlI2SDVBQWpFMWFRNlpGbkI3MWQ0b3hQL3A2T1dNZ3Z5YUdvWFV0blBtY05HQi9Ma0owQmZoZAozSUdXcHVTNzVDUGpLc3RKZlROSEdzZWZLNExVNnUybXBSZzVTQ3JTUXczZUl2a1c4SndmR3MvZ0orT3UwKzVtCmtvdndCNjJmTDlrTmE1TW9zTDhLZlBGcTZCTEd0WURCUlJSVjF1TnVCYjJTYjh3YzF6WHVxdUJtSTQ2cXExY0EKVWxuODVhVzIvVkFLSFhqUnBoQjFYZnR0azdveGNSQmZZOU9wdlBmQ2hTTkpNNzRSa05janZXRE1VTUQ5dnRLSgppMzhzRkk5MnFnN0Y0cjRBS1VsUkFqc2lURlo2czM1VXV0dE5LT2Z4blNqV1JZMjU1VG9qZUhhRVFJMHlnODliCituRUdFV3lyTTJsVlg5VDIzY25QVnU0eHNBQitrcThtb3kwRGFPMGxHY3o4c0tFcTJyTFlHa09YWEgwQ0F3RUEKQVFLQ0FnQXhNMFBSemVXK2dWWTVBd0EzaUFlL2oyUk1abERJT08rUjFscFpLT0MyNVJVTXZib1NNdk50bHpQegp3eHJrRHgzcGpmaTlUdktnL0tONVF5ZUlDQzVFdStqTGh6R1FTa0hjN2xMelEvL0xMaW1sdHFwN0NxVlcrYXBSCllza043L3ZreEg0dnRxRXJBYjI4MjA1YXc1MmJySnUrQ2gxblpWOEtKZytXaVhjZGFRWGtKQjlZZ0NlLzZ4QjcKZjhNKzlPTEJUUDhKN1VRT2NOU2RjSHRMTFU0TXpTb1IwV1JoNnE3eWxYekc1ZlhvVFRlUko3YWgraXNHcmZFdApTREVJb2I4L2dkMkN4dlFqUFRlZ0gvZ05kS3lzSWYwcksrcmxodGpYbU83MjN5cnNsbzF2T2t1V0tqSnVNQVZ3CmlsQjN1SXJnb01ZdStiaU5jbXczVXI3Vzlrb3MyU1htMEFXNkdZNkx1YS96MVlRZ09JQkRxZm96ZlJlMy9wcC8KNXo1OElDQ2tTS2hXVU43ZjZra1FiaFpvSkNjeWZlcmRjTHpnREVIRm9sbGN1MTB1ei9oWDJZYW5zdXI0WXlBQQpCY3VUTEhtT2k5UjlaRU41RGtUM3I1UE5FaFRsR2FLSmhmTWZTWmJRODEzSEp3OFhBbDI5QkZLYVhuMGthNURYCkdnQ0dSamZJM2R1bFFkRDNRSmxkZGxnVEVvU2M3Y2N3ajE3RXgyenVYZ3VhbnVNOUFwZDNDSTRoWFBZa1paU3gKSEpjd1AxTFZHaGozSzlHSUp0M2RkNmJpb0pJc2JzRVFTSlJsdWZTTmFPM3BEMVRYSlpPajQ0dHlHVnVjWGhiNQozWWNCRUUwMStYMG1nTklqWEFRZGpuOFloQmI1U3VMMzRjTmdyOXNOQ29obzkyclZoUUtDQVFFQTFyUEZmclBRClB2a2tzTitaZGJjV1ljN1dRWWVWZ2o3eXJON3MyYnNLeUI3dkdOeVczcjdVN3BRUW85REpsczcyWnVBYkpsQXUKUlNoQzlBclRLUWlMc0FxdU1lcmR1SEE4ZDN5Y0NDb2I3eFpUOVlsTnlrZ2UyYnREUUZ2UFRlYTNUbHFoTTFodgprVXRVOEZxaTFUQmdqVXZybld4TldRNjZIOFl6aEJpR25vYnF0QzNySGZKcTBvVStqczNFQ1lndzZvR2xvRmx1CnRMa2JPMkU2V2N6cCtqVld3VXBHMHZibUQyc3RCM1NncXVqckxjOXh5em1XeVJibGdSVjc0RXhiWFY4SUdWTVEKbkhNakZNKzU3NHl6U21pY3RsczFsZ3RVSDV6Mms0K2pNRUhaU1lKY2RjUzN6WSthVnpXZVJlOXl5ODQra2d4TAoxYnQ5Z1Avck1wSnF2d0tDQVFFQXgrdHN4d0dHMytpMVd4SkpXV2RPYnpWbm1CYWxyajU5ZlN2Ynh3c1MzWXpSClQ0a05rSXk2dU5JOExvSWk0RXd2cFVpMFp5aFpkVnNUL3hKMzZTbTNHbGk4L0xURmJvVWRUZWVrMkRPVTkrTDgKUHBoWUJnU1FXNnNpdnZqZDQzc2cwNXMyR2cxcW1GOWtnUXU4NW84dExLMUluNEZmcnNOTE5aTFRET3g4dGpCKwpQTHlOS2NnV2h2REsyY2Q5M1BWSzVmN0dlazVmKzlaL3FNQ25FYnFZQzc3Q3F1QjlNWXUwTG0zR0YvQ2R4ZVQxClI0QTNWSitxNGx2dTBwckMzajBvb3B0dkk5RThtdncvUlV4RFhPTzh4MUwrdzM4aE04WDJMNzBGejMydmNvRW0KcG1rc1NLQ3JtYjl3YjA3eWhEc2xlM2hrV0lPMXVrQy9VbUxMSERRend3S0NBUUJkS2dqcTMrL2ZRNUVPUnhoNgpJZ1pPVHNoZUN3MXZSUTFjd2ljWW03Y2orM2hZMjIrRUhGNmRZQmFRWHdyNnE3ZjBFQTczNHhjUTMxV2VQQXhBCjQvcHBXMWtYUkFrTi9YWGZpMnpSaGlRMDdRVmxxRHpmSjhoclJuejZNbHlVT3ljVGt2UWNLYVhQOEZaZExaYzIKMXhVdWV1RTBvRWczK3RIODg2NXJCWkYwdktxZm9NVkRhMnU3Q2lLSktQU0dCbGpqaVhwclNDTm52R0w2czBmMApxNXhqL0QwM0Jwb1E5UjREVnNobFVkQmVHVS9qd3Y1bjV3ZHRIc2hiNlF5bDJieFRtZWNUeGgyUkpjejFQT1k3CjhsdmlUOTZncXBkb0VtWmdpV1hkeGhoVDJsOEZMTkllTUV4cG9JU2lqeHVzMFNpSkUyZkhUQnFrRmdWeHNwdEcKaUk1VkFvSUJBUUNSUmZNeW5WcHNCTWNjV2FweFRBK0Q0bFBZQWNUOVhDMkdNc091M000bHJqay9TWUZRNCtLZgpnUzM0UWRxa0VOaWlpN1dFTEo3dEYzVHRhbmMyT0hqMHJUMFBpVERhZ2VKc2hRS1ZsTTRRWDZJYXZrdGdmQnFHCmNsSjZZWStqeVFwdW1oL3pTSUtJSFBHRWtJb0JKRk9ZWG9jaVdUbTFYZmFlQklaV290Wnc4Y1laem8zcHFac3QKRFhicVQvdVcvNndnZTBXeEJKamRBTjZkT3Zsc2VhSVpEdEtZcHk1eVBXbCtQNGl1UnN2dlROUXIwL0RoRG5GMwpzWVJYQjl6STc3cENoeDU0OFlmUHU3TWlZU3VtS1ZzNW9JYStldmdlamlDNlNlb1ovK1BwR2c2QzZIUWtocFNMCjBjQWJNa3dxYUd4eFQyZmpwam45RVNXMThWSlV1VjVQQW9JQkFIUkYrbWlTQ1JTMHdmemRCelhJZndnamJFc1YKRkdQOGhIOEd5WGs0Q1JTKzJoc2F4M29BYXcyU01nd2g1UmNsWWJwV0xFeEV6aStPc3p4cmFzeWVsckZyT25kcAprczU1NUZBUU9QM2ZzKzBoOTVGcmxFT3FwSzBGUDlqMzBZWVdLK3FlRjFXazVGVkRHSGdLaGd3U1I1T0kyV05LCnJVd3hSSVVPQnpIeGd1VlJnb1dWV3Y5S2EyditpMnJPTThxL3UvOEtOOWdCaW9McDJweEU1QzJRTGxwNm0wa0MKR2ZhbmxoSkRVN2JsWVJ4dWxRbkROQm5hYWpmNC9tenYzVXdlNi80alNUbVZIUXl2WXFHQldzTWxCZDk0QWFyeAp1R0k4NysyUWhRTnR3YitDTEt0Q3ZMM09wVi9WU3JGUlRiZldINmlpek50M2V5dWN3N1JmQWtXcHpmcz0KLS0tLS1FTkQgUlNBIFBSSVZBVEUgS0VZLS0tLS0K
+kind: Secret
+metadata:
+  creationTimestamp: null
+  name: validationwebhookcerts
+  namespace: direct-csi-min-io
+
+---
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  annotations:
+    created-by: kubectl/direct-csi
+  creationTimestamp: null
+  finalizers:
+  - direct-csi-min-io/delete-protection
+  labels:
+    app: direct.csi.min.io
+    type: CSIDriver
+  name: direct-csi-min-io
+  namespace: direct-csi-min-io
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      selector.direct.csi.min.io: direct-csi-min-io-v4h9w
+  strategy: {}
+  template:
+    metadata:
+      annotations:
+        created-by: kubectl/direct-csi
+      creationTimestamp: null
+      labels:
+        selector.direct.csi.min.io: direct-csi-min-io-v4h9w
+      name: direct-csi-min-io
+      namespace: direct-csi-min-io
+    spec:
+      containers:
+      - args:
+        - --v=3
+        - --timeout=300s
+        - --csi-address=$(CSI_ENDPOINT)
+        - --leader-election
+        - --feature-gates=Topology=true
+        - --strict-topology
+        env:
+        - name: CSI_ENDPOINT
+          value: unix:///csi/csi.sock
+        image: quay.io/minio/csi-provisioner@sha256:d4f94539565cf62aea57062b6a42c5156337003133fd3f51b93df9a789e69840
+        name: csi-provisioner
+        resources: {}
+        securityContext:
+          privileged: true
+        terminationMessagePath: /var/log/controller-provisioner-termination-log
+        terminationMessagePolicy: FallbackToLogsOnError
+        volumeMounts:
+        - mountPath: /csi
+          mountPropagation: None
+          name: socket-dir
+      - args:
+        - -v=3
+        - --identity=direct-csi-min-io
+        - --endpoint=$(CSI_ENDPOINT)
+        - --conversion-webhook-url=https://directcsi-conversion-webhook.direct-csi-min-io.svc/healthz
+        - --controller
+        env:
+        - name: KUBE_NODE_NAME
+          valueFrom:
+            fieldRef:
+              apiVersion: v1
+              fieldPath: spec.nodeName
+        - name: CSI_ENDPOINT
+          value: unix:///csi/csi.sock
+        image: quay.io/minio/direct-csi:v1.4.3
+        name: direct-csi
+        ports:
+        - containerPort: 443
+          name: validatinghook
+          protocol: TCP
+        - containerPort: 9898
+          name: healthz
+          protocol: TCP
+        resources: {}
+        securityContext:
+          privileged: true
+        volumeMounts:
+        - mountPath: /csi
+          mountPropagation: None
+          name: socket-dir
+        - mountPath: /etc/certs
+          mountPropagation: None
+          name: admission-webhook-certs
+        - mountPath: /etc/CAs
+          mountPropagation: None
+          name: conversion-webhook-certs
+      serviceAccountName: direct-csi-min-io
+      volumes:
+      - hostPath:
+          path: /var/lib/kubelet/plugins/direct-csi-min-io-controller
+          type: DirectoryOrCreate
+        name: socket-dir
+      - name: admission-webhook-certs
+        secret:
+          secretName: validationwebhookcerts
+      - name: conversion-webhook-certs
+        secret:
+          secretName: converionwebhookcertsecret
+status: {}
+
+---
+

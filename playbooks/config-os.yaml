@@ -1,0 +1,112 @@
+- hosts: all
+  become: true
+  become_user: root
+  tasks:
+
+    - name: Add specific temperature:fan-speed values
+      blockinfile:
+        path: /boot/firmware/usercfg.txt
+        block: |
+          dtoverlay=disable-wifi
+          dtoverlay=disable-bt
+          dtoverlay=rpi-poe
+          dtparam=poe_fan_temp0=70000,poe_fan_temp0_hyst=2000
+          dtparam=poe_fan_temp1=73000,poe_fan_temp1_hyst=3000
+          dtparam=poe_fan_temp2=77000,poe_fan_temp2_hyst=4000
+          dtparam=poe_fan_temp3=80000,poe_fan_temp3_hyst=5000
+          dtoverlay=disable-wifi
+          dtoverlay=disable-bt
+
+    - name: Allow everything and enable UFW
+      community.general.ufw:
+        state: disabled
+        policy: allow
+
+    - name: Add the overlay module
+      community.general.modprobe:
+        name: overlay
+        state: present
+
+    - name: Add the nf_conntrack module
+      community.general.modprobe:
+        name: nf_conntrack
+        state: present
+
+    - name: Add the br_netfilter module
+      community.general.modprobe:
+        name: br_netfilter
+        state: present
+
+    - name: Insert overlay kmod
+      lineinfile:
+        path: /etc/modules-load.d/modules.conf
+        line: overlay
+
+    - name: Insert nf_conntrack kmod
+      lineinfile:
+        path: /etc/modules-load.d/modules.conf
+        line: nf_conntrack
+
+    - name: Insert br_netfilter kmod
+      lineinfile:
+        path: /etc/modules-load.d/modules.conf
+        line: br_netfilter
+
+    - name: Kernel cgroup flags
+      replace:
+        backup: false
+        dest: /boot/firmware/cmdline.txt
+        regexp: '^(.*root.*)$'
+        replace: '\1 cgroup_enable=cpuset cgroup_enable=memory cgroup_memory=1'
+
+    - name: Stop apparmor svc
+      ansible.builtin.systemd:
+        name: apparmor
+        state: stopped
+        force: true
+        enabled: false
+
+    - name: Stop apport svc
+      ansible.builtin.systemd:
+        name: apport
+        state: stopped
+        force: true
+        enabled: false
+
+    - name: Stop ufw svc
+      ansible.builtin.systemd:
+        name: ufw
+        state: stopped
+        force: true
+        enabled: false
+
+    - name: Stop unattended-upgrades svc
+      ansible.builtin.systemd:
+        name: unattended-upgrades
+        state: stopped
+        force: true
+        enabled: false
+
+    - name: Stop apache2 svc
+      ansible.builtin.systemd:
+        name: apache2
+        state: stopped
+        force: true
+        enabled: false
+
+    - name: Set timezone variables
+      copy: content='America/Los_Angeles'
+            dest=/etc/timezone
+            owner=root
+            group=root
+            mode=0644
+            backup=yes
+      notify:
+        - update timezone
+  handlers:
+    - name: update timezone
+      command: dpkg-reconfigure --frontend noninteractive tzdata
+
+
+# ansible-galaxy collection install ansible.posix
+# ansible-galaxy collection install community.general
