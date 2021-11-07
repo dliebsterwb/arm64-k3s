@@ -58,3 +58,4 @@ To get access to your **Kubernetes** cluster just
 ```bash
 scp debian@master_ip:~/.kube/config ~/.kube/config
 ```
+Keeping k3s-ansible around for ideas, it is still 10x slower than k3sup atm tho..
